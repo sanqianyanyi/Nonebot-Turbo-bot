@@ -870,3 +870,42 @@ async def handle_arcade_detail(
     )
 
     await arcade_detail_matcher.finish("\n".join(lines))
+
+# ======================= 指令：/net 网络状态（管理员 BotKey） =======================
+
+net_cmd = on_command(
+    "net",
+    block=True,
+    priority=11,
+)
+
+@net_cmd.handle()
+async def handle_net(bot: Bot, event: MessageEvent):
+    admin_qq = os.getenv("SYSALLNET_ADMIN_QQ").strip()
+    if not admin_qq:
+        await net_cmd.finish("管理员 QQ 未配置，请在 .env 中设置 SYSALLNET_ADMIN_QQ")
+
+    headers = _build_auth_headers(admin_qq)
+    if not headers:
+        await net_cmd.finish(
+            "管理员尚未绑定 BotKey，无法查询网络状态。\n"
+            "请管理员先使用：/bind <管理员botToken>"
+        )
+
+    url = f"{API_BASE}/web/showNetworkStatus"
+    async with httpx.AsyncClient(timeout=10) as client:
+        resp = await client.get(url, headers=headers)
+    resp.raise_for_status()
+    data = resp.json()
+
+    status_translate = {"WORKING": "工作中", "WARNING": "警告", "ERROR": "掉线啦！！！", "UNKNOWN": "未知"}
+
+    out: List[str] = []
+    for idx, arcade in enumerate(data, start=1):
+        name = arcade.get("arcadeName") or "未知机厅"
+        ws = arcade.get("workingStatus") or "UNKNOWN"
+        ws_cn = status_translate.get(ws, ws)
+        last = arcade.get("lastHeartbeatSecond") or "未知时间"
+        out.append(f"{idx}.{name} 状态：{ws_cn} 最后返回心跳包时间：{last}")
+
+    await net_cmd.finish("\n".join(out))

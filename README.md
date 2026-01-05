@@ -24,6 +24,9 @@ Nonebot-Turbo-bot是基于Turbo相关Api文档，提供指令服务的Bot插件�
 2025-12-31 </br>
 1.修正机厅人数显示ID</br>
 2.新增调用管理员账号Token查询机厅，无需用户绑定。</br>
+</br>
+2026-01-04
+1.新增网络状态查询</br>
 
 # 版权归属
 该项目所有调用API内容归该项目为[TurboServlet]((https://github.com/TurboServlet))项目组所有 https://github.com/TurboServlet
